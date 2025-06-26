@@ -60,14 +60,14 @@ nav {
 
 nav ul {
     display: flex;
-    /* Removed justify-content: center here as parent nav is centering */
+    justify-content: center; /* Ensures symmetry for horizontal and wrapped items */
     list-style: none;
     padding: 0;
     margin: 0;
     gap: 1rem; /* Use gap for consistent spacing between buttons */
     flex-wrap: wrap; /* Allow buttons to wrap to next line if needed on small screens */
     flex-grow: 1; /* Allow ul to grow to fill space in nav */
-    justify-content: center; /* Ensure contents of ul are centered (important for wrapped items) */
+    /* Removed align-items: stretch here, as it can interfere with button height */
 }
 
 nav li {
@@ -337,18 +337,14 @@ tbody tr:last-child {
         padding: 1.5rem;
     }
     nav ul {
-        /* On small screens, keep buttons in a row if space allows, otherwise wrap symmetrically */
-        /* Removed flex-direction: column for nav ul to maintain horizontal flow if possible */
-        gap: 0.5rem; /* Reduced gap on smaller screens */
+        gap: 0.5rem;
     }
     nav .btn-primary {
         padding: 0.3rem 0.6rem;
         font-size: 0.75rem;
         min-width: 70px;
-        /* Ensure buttons adapt width within flex-wrap */
-        flex-basis: auto; /* Allow content to dictate basis, or set a percentage like 48% for two columns if desired */
+        flex-basis: auto;
     }
-    /* Original @media rules that are still good */
     .grid-cols-1, .md:grid-cols-2, .lg:grid-cols-3 {
         grid-template-columns: 1fr;
     }
