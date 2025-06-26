@@ -478,6 +478,23 @@ const elementsToTranslate = {
     'btn-delete-trade': { // Translate delete button in table specifically
         'en': 'Delete',
         'jp': '削除'
+    },
+    // PDF export specific messages
+    'pdf-export-no-panel': {
+        'en': 'Statistics panel not found for PDF export.',
+        'jp': 'PDFエクスポート用の統計パネルが見つかりません。'
+    },
+    'pdf-export-generating': {
+        'en': 'Generating PDF...',
+        'jp': 'PDFを生成中...'
+    },
+    'pdf-export-success': {
+        'en': 'PDF generated successfully!',
+        'jp': 'PDFが正常に生成されました！'
+    },
+    'pdf-export-failed': {
+        'en': 'Failed to generate PDF. Please try again.',
+        'jp': 'PDFの生成に失敗しました。もう一度お試しください。'
     }
 };
 
@@ -656,12 +673,10 @@ addTradeBtn.addEventListener('click', () => {
     // Calculate pips based on manually selected outcome
     if (selectedOutcome === 'TP') {
         pips = calculatePips(pair, entry, tp);
-        // Ensure correct sign based on action for TP (always positive pips for TP)
-        pips = Math.abs(pips);
+        pips = Math.abs(pips); // Always positive for TP
     } else { // selectedOutcome === 'SL'
         pips = calculatePips(pair, entry, sl);
-        // Ensure correct sign based on action for SL (always negative pips for SL)
-        pips = -Math.abs(pips);
+        pips = -Math.abs(pips); // Always negative for SL
     }
 
 
@@ -726,7 +741,6 @@ function renderTradeTable() {
 
         const actionCell = row.insertCell();
         const deleteBtn = document.createElement('button');
-        // Delete button text should be translated directly here from elementsToTranslate
         deleteBtn.textContent = elementsToTranslate['btn-delete-trade'][currentLang];
         deleteBtn.classList.add('btn-danger');
         deleteBtn.onclick = () => confirmDeleteTrade(trade.id); // Call confirmDeleteTrade
@@ -765,7 +779,7 @@ function confirmDeleteTrade(id) {
     message.style.fontSize = '1.1rem';
 
     const confirmButton = document.createElement('button');
-    confirmButton.textContent = elementsToTranslate['confirm-delete-yes'][currentLang]; // Translated Yes button
+    confirmButton.textContent = elementsToTranslate['confirm-delete-yes'][currentLang];
     confirmButton.classList.add('btn-primary', 'mr-4');
     confirmButton.onclick = () => {
         deleteTrade(id);
@@ -773,7 +787,7 @@ function confirmDeleteTrade(id) {
     };
 
     const cancelButton = document.createElement('button');
-    cancelButton.textContent = elementsToTranslate['confirm-delete-no'][currentLang]; // Translated No button
+    cancelButton.textContent = elementsToTranslate['confirm-delete-no'][currentLang];
     cancelButton.classList.add('btn-danger');
     cancelButton.onclick = () => {
         document.body.removeChild(modal);
@@ -827,7 +841,7 @@ function confirmResetData() {
     message.style.color = '#ef4444'; // Red for warning
 
     const confirmButton = document.createElement('button');
-    confirmButton.textContent = elementsToTranslate['confirm-reset-yes'][currentLang]; // Translated Yes, Delete All button
+    confirmButton.textContent = elementsToTranslate['confirm-reset-yes'][currentLang];
     confirmButton.classList.add('btn-danger', 'mr-4');
     confirmButton.onclick = () => {
         resetAllData();
@@ -835,7 +849,7 @@ function confirmResetData() {
     };
 
     const cancelButton = document.createElement('button');
-    cancelButton.textContent = elementsToTranslate['confirm-reset-no'][currentLang]; // Translated No, Cancel button
+    cancelButton.textContent = elementsToTranslate['confirm-reset-no'][currentLang];
     cancelButton.classList.add('btn-primary');
     cancelButton.onclick = () => {
         document.body.removeChild(modal);
@@ -861,7 +875,7 @@ function resetAllData() {
 initialCapitalInput.addEventListener('change', calculateAndDisplayStatistics);
 lotSizeInput.addEventListener('change', calculateAndDisplayStatistics);
 resetDataBtn.addEventListener('click', confirmResetData);
-exportPdfBtn.addEventListener('click', exportStatisticsToPdf); // New: Event listener for PDF export
+exportPdfBtn.addEventListener('click', exportStatisticsToPdf); // Event listener for PDF export
 
 // Function to calculate and display all statistics
 function calculateAndDisplayStatistics() {
@@ -1326,28 +1340,40 @@ async function exportStatisticsToPdf() {
         const canvas = await html2canvas(statisticsPanel, {
             scale: 2, // Increase scale for better resolution in PDF
             useCORS: true, // Needed if you have images from other domains (e.g., Google Charts eventually)
+            logging: false, // Disable logging for cleaner console
+            allowTaint: true // Allow images from other origins (if any)
         });
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new window.jspdf.jsPDF(); // Initialize jsPDF
+        // Ensure window.jspdf.jsPDF is available
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            console.error("jsPDF library not loaded.");
+            showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value] + " (jsPDF not loaded)", true);
+            return;
+        }
+
+        const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4'); // Initialize jsPDF (portrait, points, A4)
+        const imgData = canvas.toDataURL('image/jpeg', 1.0); // Use JPEG for smaller file size, quality 1.0
         const imgProps= pdf.getImageProperties(imgData);
+        
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
         // Calculate image dimensions to fit PDF page while maintaining aspect ratio
-        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        let heightLeft = imgHeight;
+        const imgAspectRatio = imgProps.width / imgProps.height;
+        const scaledImgWidth = pdfWidth;
+        const scaledImgHeight = pdfWidth / imgAspectRatio;
 
+        let heightLeft = scaledImgHeight;
         let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, scaledImgWidth, scaledImgHeight);
         heightLeft -= pdfHeight;
 
         // If content overflows, add new pages
         while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
+            position = heightLeft - scaledImgHeight;
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+            pdf.addImage(imgData, 'JPEG', 0, position, scaledImgWidth, scaledImgHeight);
             heightLeft -= pdfHeight;
         }
 
@@ -1356,7 +1382,7 @@ async function exportStatisticsToPdf() {
 
     } catch (error) {
         console.error("Error generating PDF:", error);
-        showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value], true);
+        showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value] + " (" + error.message + ")", true);
     }
 }
 
@@ -1385,7 +1411,6 @@ function showPage(pageId) {
     }
 }
 
-// Initial page load: show data entry page
 // Initial page load sequence:
 // 1. Load existing data from local storage
 // 2. If no data, populate with dummy data
@@ -1398,11 +1423,6 @@ if (trades.length === 0) { // If no data was loaded, then add dummy data
 renderTradeTable(); // Render table based on loaded/dummy data
 calculateAndDisplayStatistics(); // Calculate stats based on loaded/dummy data
 showPage('page-data-entry'); // Show the default page
-
-
-// Add event listeners for navigation buttons
-navDataEntryBtn.addEventListener('click', () => showPage('page-data-entry'));
-navStatisticsBtn.addEventListener('click', () => showPage('page-statistics'));
 
 
 // Optional: Add some dummy data for demonstration
