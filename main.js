@@ -23,6 +23,7 @@ const importCsvFile = document.getElementById('import-csv-file');
 const importCsvBtn = document.getElementById('import-csv-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 const resetDataBtn = document.getElementById('reset-data-btn');
+const exportPdfBtn = document.getElementById('export-pdf-btn'); // Reference to new PDF export button
 
 // Navigation elements
 const navDataEntryBtn = document.getElementById('nav-data-entry');
@@ -133,6 +134,10 @@ const elementsToTranslate = {
     'btn-reset-data': {
         'en': 'Reset Data',
         'jp': 'データリセット'
+    },
+    'btn-export-pdf': { // New: Export PDF button label
+        'en': 'Export to PDF',
+        'jp': 'PDFにエクスポート'
     },
     'title-trade-list': {
         'en': 'Trade List',
@@ -568,7 +573,8 @@ function showNotification(message, isError = false) {
 // Adjust step attribute for price inputs based on selected pair
 tradePairSelect.addEventListener('change', () => {
     const pair = tradePairSelect.value;
-    const stepValue = 1 / Math.pow(10, decimalPlaces[pair] || 5); // Default to 5 decimal places
+    // Determine the step value based on the decimal places for the pair
+    const stepValue = 1 / Math.pow(10, decimalPlaces[pair] || 5); // Default to 5 decimal places if not specified
     tradeEntryInput.step = stepValue;
     tradeSlInput.step = stepValue;
     tradeTpInput.step = stepValue;
@@ -582,12 +588,15 @@ tradePairSelect.dispatchEvent(new Event('change'));
 
 // Function to calculate pips based on pair type
 function calculatePips(pair, entry, exit) {
-    let multiplier = 10000; // Default for 4-decimal pairs like EURUSD (e.g., 1.23456 -> 1.2345)
+    let multiplier;
     if (pair.includes('JPY')) {
-        multiplier = 100; // For JPY pairs (e.g., 130.123 -> 130.12)
+        multiplier = 100; // For JPY pairs, 1 pip = 0.01 price movement (e.g., 130.12 to 130.13)
     } else if (pair === 'XAUUSD') {
-        multiplier = 100; // For XAUUSD, 0.01 move is often considered 1 pip.
+        multiplier = 10; // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10)
+    } else {
+        multiplier = 10000; // For most other pairs, 1 pip = 0.0001 price movement (e.g., 1.23450 to 1.23460)
     }
+    // Calculate raw pips, then round to 2 decimal places for display consistency
     return parseFloat(((exit - entry) * multiplier).toFixed(2));
 }
 
@@ -612,31 +621,31 @@ addTradeBtn.addEventListener('click', () => {
     const selectedOutcome = document.querySelector('input[name="trade-outcome"]:checked').value; // Get selected outcome
 
     if (!openDate || !closeDate || isNaN(entry) || isNaN(sl) || isNaN(tp)) {
-        showNotification(elementsToTranslate['validation-fill-all-fields'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['validation-fill-all-fields'][languageSelect.value], true);
         return;
     }
     if (new Date(closeDate) < new Date(openDate)) {
-        showNotification(elementsToTranslate['validation-close-date-earlier'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['validation-close-date-earlier'][languageSelect.value], true);
         return;
     }
 
     // Validation for SL/TP prices based on action
     if (action === 'buy') {
         if (sl >= entry) {
-            showNotification(elementsToTranslate['validation-buy-sl'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['validation-buy-sl'][languageSelect.value], true);
             return;
         }
         if (tp <= entry) {
-            showNotification(elementsToTranslate['validation-buy-tp'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['validation-buy-tp'][languageSelect.value], true);
             return;
         }
     } else { // action === 'sell'
         if (sl <= entry) {
-            showNotification(elementsToTranslate['validation-sell-sl'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['validation-sell-sl'][languageSelect.value], true);
             return;
         }
         if (tp >= entry) {
-            showNotification(elementsToTranslate['validation-sell-tp'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['validation-sell-tp'][languageSelect.value], true);
             return;
         }
     }
@@ -647,14 +656,12 @@ addTradeBtn.addEventListener('click', () => {
     // Calculate pips based on manually selected outcome
     if (selectedOutcome === 'TP') {
         pips = calculatePips(pair, entry, tp);
-        // Ensure correct sign based on action for TP
-        if (action === 'buy') pips = Math.abs(pips);
-        else pips = Math.abs(pips); // For sell, TP means price goes down (entry > tp), so (tp-entry) is negative, need positive pips
+        // Ensure correct sign based on action for TP (always positive pips for TP)
+        pips = Math.abs(pips);
     } else { // selectedOutcome === 'SL'
         pips = calculatePips(pair, entry, sl);
-        // Ensure correct sign based on action for SL
-        if (action === 'buy') pips = -Math.abs(pips);
-        else pips = -Math.abs(pips); // For sell, SL means price goes up (entry < sl), so (sl-entry) is positive, need negative pips
+        // Ensure correct sign based on action for SL (always negative pips for SL)
+        pips = -Math.abs(pips);
     }
 
 
@@ -679,7 +686,7 @@ addTradeBtn.addEventListener('click', () => {
     trades.push(newTrade);
     trades.sort((a, b) => new Date(a.openDate) - new Date(b.openDate)); // Sort by date
     saveTrades(); // Save to local storage
-    showNotification(elementsToTranslate['trade-added-success'][languageSelect.value]); // Translated message
+    showNotification(elementsToTranslate['trade-added-success'][languageSelect.value]);
     clearTradeInputs();
     renderTradeTable();
     calculateAndDisplayStatistics();
@@ -783,7 +790,7 @@ function confirmDeleteTrade(id) {
 function deleteTrade(id) {
     trades = trades.filter(trade => trade.id !== id);
     saveTrades(); // Save to local storage after deletion
-    showNotification(elementsToTranslate['trade-deleted-success'][languageSelect.value]); // Translated message
+    showNotification(elementsToTranslate['trade-deleted-success'][languageSelect.value]);
     renderTradeTable();
     calculateAndDisplayStatistics();
 }
@@ -845,7 +852,7 @@ function confirmResetData() {
 function resetAllData() {
     trades = []; // Clear the trades array
     localStorage.removeItem('tradingTrades'); // Clear local storage explicitly
-    showNotification(elementsToTranslate['data-reset-success'][languageSelect.value], true); // Translated message
+    showNotification(elementsToTranslate['data-reset-success'][languageSelect.value], true);
     renderTradeTable();
     calculateAndDisplayStatistics();
 }
@@ -854,6 +861,7 @@ function resetAllData() {
 initialCapitalInput.addEventListener('change', calculateAndDisplayStatistics);
 lotSizeInput.addEventListener('change', calculateAndDisplayStatistics);
 resetDataBtn.addEventListener('click', confirmResetData);
+exportPdfBtn.addEventListener('click', exportStatisticsToPdf); // New: Event listener for PDF export
 
 // Function to calculate and display all statistics
 function calculateAndDisplayStatistics() {
@@ -1008,7 +1016,7 @@ function drawEquityChart(data) {
         ctx.fillStyle = '#6b7280'; // gray-500
         ctx.font = '16px Roboto, sans-serif'; // Changed font
         ctx.textAlign = 'center';
-        ctx.fillText(elementsToTranslate['no-chart-data-message'][languageSelect.value], equityChartCanvas.offsetWidth / 2, equityChartCanvas.offsetHeight / 2); // Translated message
+        ctx.fillText(elementsToTranslate['no-chart-data-message'][languageSelect.value], equityChartCanvas.offsetWidth / 2, equityChartCanvas.offsetHeight / 2);
         return;
     }
 
@@ -1120,7 +1128,7 @@ const csvHeaders = [
 
 function exportTradesToCSV() {
     if (trades.length === 0) {
-        showNotification(elementsToTranslate['no-data-to-export'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['no-data-to-export'][languageSelect.value], true);
         return;
     }
 
@@ -1150,9 +1158,9 @@ function exportTradesToCSV() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        showNotification(elementsToTranslate['data-exported-success'][languageSelect.value]); // Translated message
+        showNotification(elementsToTranslate['data-exported-success'][languageSelect.value]);
     } else {
-        showNotification(elementsToTranslate['browser-no-csv-support'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['browser-no-csv-support'][languageSelect.value], true);
     }
 }
 
@@ -1168,7 +1176,7 @@ async function importTradesFromCSV(event) {
         const lines = text.split('\n').filter(line => line.trim() !== '');
 
         if (lines.length === 0) {
-            showNotification(elementsToTranslate['csv-empty-invalid'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['csv-empty-invalid'][languageSelect.value], true);
             return;
         }
 
@@ -1177,7 +1185,7 @@ async function importTradesFromCSV(event) {
         const requiredHeaders = ["pair", "action", "openDate", "closeDate", "entry", "sl", "tp"];
         const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
         if (missingHeaders.length > 0) {
-            showNotification(elementsToTranslate['csv-missing-headers'][languageSelect.value].replace('{headers}', missingHeaders.join(', ')), true); // Translated message
+            showNotification(elementsToTranslate['csv-missing-headers'][languageSelect.value].replace('{headers}', missingHeaders.join(', ')), true);
             return;
         }
 
@@ -1185,7 +1193,7 @@ async function importTradesFromCSV(event) {
         for (let i = 1; i < lines.length; i++) {
             const rowData = lines[i].split(',').map(item => item.trim().replace(/"/g, ''));
             if (rowData.length !== headers.length) {
-                showNotification(elementsToTranslate['csv-row-invalid-columns'][languageSelect.value].replace('{rowNum}', i + 1), true); // Translated message
+                showNotification(elementsToTranslate['csv-row-invalid-columns'][languageSelect.value].replace('{rowNum}', i + 1), true);
                 continue;
             }
 
@@ -1202,11 +1210,11 @@ async function importTradesFromCSV(event) {
 
             // Validate parsed data
             if (isNaN(trade.entry) || isNaN(trade.sl) || isNaN(trade.tp) || !trade.pair || !trade.action || !trade.openDate || !trade.closeDate) {
-                showNotification(elementsToTranslate['csv-row-invalid-data'][languageSelect.value].replace('{rowNum}', i + 1), true); // Translated message
+                showNotification(elementsToTranslate['csv-row-invalid-data'][languageSelect.value].replace('{rowNum}', i + 1), true);
                 continue;
             }
             if (new Date(trade.closeDate) < new Date(trade.openDate)) {
-                showNotification(elementsToTranslate['csv-row-close-date-earlier'][languageSelect.value].replace('{rowNum}', i + 1), true); // Translated message
+                showNotification(elementsToTranslate['csv-row-close-date-earlier'][languageSelect.value].replace('{rowNum}', i + 1), true);
                 continue;
             }
 
@@ -1218,19 +1226,14 @@ async function importTradesFromCSV(event) {
             // Recalculate pips based on the imported outcome
             if (outcome === 'TP') {
                 pips = calculatePips(trade.pair, trade.entry, trade.tp);
-                if (trade.action === 'buy') pips = Math.abs(pips);
-                else pips = Math.abs(pips);
+                pips = Math.abs(pips);
             } else if (outcome === 'SL') {
                 pips = calculatePips(trade.pair, trade.entry, trade.sl);
-                if (trade.action === 'buy') pips = -Math.abs(pips);
-                else pips = -Math.abs(pips);
+                pips = -Math.abs(pips);
             } else {
-                // If outcome is neither TP nor SL, or missing,
-                // we cannot infer pips reliably without more information.
-                // For simplicity, we'll assign 0 pips and "N/A" outcome in this case.
                 pips = 0;
                 outcome = 'N/A';
-                showNotification(elementsToTranslate['csv-row-invalid-outcome'][languageSelect.value].replace('{rowNum}', i + 1).replace('{outcome}', trade.outcome), true); // Translated message
+                showNotification(elementsToTranslate['csv-row-invalid-outcome'][languageSelect.value].replace('{rowNum}', i + 1).replace('{outcome}', trade.outcome), true);
             }
 
 
@@ -1246,11 +1249,11 @@ async function importTradesFromCSV(event) {
             trades = trades.concat(importedTrades);
             trades.sort((a, b) => new Date(a.openDate) - new Date(b.openDate));
             saveTrades(); // Save to local storage after import
-            showNotification(elementsToTranslate['trades-imported-success'][languageSelect.value].replace('{count}', importedTrades.length)); // Translated message
+            showNotification(elementsToTranslate['trades-imported-success'][languageSelect.value].replace('{count}', importedTrades.length));
             renderTradeTable();
             calculateAndDisplayStatistics();
         } else {
-            showNotification(elementsToTranslate['no-valid-trades-in-csv'][languageSelect.value], true); // Translated message
+            showNotification(elementsToTranslate['no-valid-trades-in-csv'][languageSelect.value], true);
         }
     };
     reader.readAsText(file);
@@ -1264,7 +1267,7 @@ function saveTrades() {
     }
     catch (e) {
         console.error('Error saving trades to local storage:', e);
-        showNotification(elementsToTranslate['error-saving-local-storage'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['error-saving-local-storage'][languageSelect.value], true);
     }
 }
 
@@ -1294,12 +1297,12 @@ function loadTrades() {
                 }
             });
             trades.sort((a, b) => new Date(a.openDate) - new Date(b.openDate)); // Re-sort in case local storage was unsorted
-            showNotification(elementsToTranslate['data-loaded-success'][languageSelect.value]); // Translated message
+            showNotification(elementsToTranslate['data-loaded-success'][languageSelect.value]);
         }
     }
     catch (e) {
         console.error('Error loading trades from local storage:', e);
-        showNotification(elementsToTranslate['error-loading-local-storage'][languageSelect.value], true); // Translated message
+        showNotification(elementsToTranslate['error-loading-local-storage'][languageSelect.value], true);
     }
 }
 
@@ -1307,6 +1310,56 @@ function loadTrades() {
 exportCsvBtn.addEventListener('click', exportTradesToCSV);
 importCsvBtn.addEventListener('click', () => importCsvFile.click()); // Trigger file input click
 importCsvFile.addEventListener('change', importTradesFromCSV);
+
+// PDF Export Function
+async function exportStatisticsToPdf() {
+    const statisticsPanel = document.getElementById('statistics-panel');
+    if (!statisticsPanel) {
+        showNotification(elementsToTranslate['pdf-export-no-panel'][languageSelect.value], true);
+        return;
+    }
+
+    showNotification(elementsToTranslate['pdf-export-generating'][languageSelect.value]);
+
+    try {
+        // Use html2canvas to render the entire statistics panel as a single image
+        const canvas = await html2canvas(statisticsPanel, {
+            scale: 2, // Increase scale for better resolution in PDF
+            useCORS: true, // Needed if you have images from other domains (e.g., Google Charts eventually)
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new window.jspdf.jsPDF(); // Initialize jsPDF
+        const imgProps= pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        // Calculate image dimensions to fit PDF page while maintaining aspect ratio
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        let heightLeft = imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        // If content overflows, add new pages
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pdfHeight;
+        }
+
+        pdf.save('trading_statistics.pdf');
+        showNotification(elementsToTranslate['pdf-export-success'][languageSelect.value]);
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value], true);
+    }
+}
+
 
 // Page navigation logic
 function showPage(pageId) {
@@ -1333,7 +1386,19 @@ function showPage(pageId) {
 }
 
 // Initial page load: show data entry page
-showPage('page-data-entry');
+// Initial page load sequence:
+// 1. Load existing data from local storage
+// 2. If no data, populate with dummy data
+// 3. Render the trade table and calculate statistics
+// 4. Show the default page (data entry)
+loadTrades(); // Load any existing data
+if (trades.length === 0) { // If no data was loaded, then add dummy data
+    addDummyData();
+}
+renderTradeTable(); // Render table based on loaded/dummy data
+calculateAndDisplayStatistics(); // Calculate stats based on loaded/dummy data
+showPage('page-data-entry'); // Show the default page
+
 
 // Add event listeners for navigation buttons
 navDataEntryBtn.addEventListener('click', () => showPage('page-data-entry'));
@@ -1355,39 +1420,34 @@ function addDummyData() {
         { id: 10, pair: "XAUUSD", action: "sell", openDate: "2023-05-10", closeDate: "2023-05-11", entry: 1950.00, sl: 1960.00, tp: 1940.00, outcome: "TP" }
     ];
 
-    // Only add dummy data if there are no existing trades in local storage
-    if (trades.length === 0) {
-        trades = dummyTrades.map(trade => {
-            let pips = 0;
-            const pipValuePerLot = pipValues[trade.pair] || 10;
-            const lotSize = parseFloat(lotSizeInput.value) || 0.01;
+    // No need for conditional check here, as it's done before calling addDummyData
+    trades = dummyTrades.map(trade => {
+        let pips = 0;
+        const pipValuePerLot = pipValues[trade.pair] || 10;
+        const lotSize = parseFloat(lotSizeInput.value) || 0.01;
 
-            // Calculate pips based on the dummy trade's defined outcome
-            if (trade.outcome === 'TP') {
-                pips = calculatePips(trade.pair, trade.entry, trade.tp);
-                if (trade.action === 'buy') pips = Math.abs(pips);
-                else pips = Math.abs(pips);
-            } else { // SL
-                pips = calculatePips(trade.pair, trade.entry, trade.sl);
-                if (trade.action === 'buy') pips = -Math.abs(pips);
-                else pips = -Math.abs(pips);
-            }
+        // Calculate pips based on the dummy trade's defined outcome
+        if (trade.outcome === 'TP') {
+            pips = calculatePips(trade.pair, trade.entry, trade.tp);
+            pips = Math.abs(pips);
+        } else { // SL
+            pips = calculatePips(trade.pair, trade.entry, trade.sl);
+            pips = -Math.abs(pips);
+        }
 
-            const nominalProfitLoss = pips * lotSize * pipValuePerLot;
-            const holdingDays = calculateHoldingPeriod(trade.openDate, trade.closeDate);
+        const nominalProfitLoss = pips * lotSize * pipValuePerLot;
+        const holdingDays = calculateHoldingPeriod(trade.openDate, trade.closeDate);
 
-            return {
-                ...trade,
-                pips: parseFloat(pips.toFixed(2)),
-                nominalProfitLoss: parseFloat(nominalProfitLoss.toFixed(2)),
-                holdingDays
-            };
-        });
-        trades.sort((a, b) => new Date(a.openDate) - new Date(b.openDate)); // Sort by date
-        saveTrades(); // Save dummy data to local storage
-        showNotification(elementsToTranslate['dummy-data-loaded'][languageSelect.value]);
-    }
+        return {
+            ...trade,
+            pips: parseFloat(pips.toFixed(2)),
+            nominalProfitLoss: parseFloat(nominalProfitLoss.toFixed(2)),
+            holdingDays
+        };
+    });
+    trades.sort((a, b) => new Date(a.openDate) - new Date(b.openDate)); // Sort by date
+    saveTrades(); // Save dummy data to local storage
+    showNotification(elementsToTranslate['dummy-data-loaded'][languageSelect.value]);
 }
 
-// Uncomment the line below to load dummy data on app startup for easier testing
-addDummyData();
+// addDummyData() is now called conditionally from the initial load sequence
