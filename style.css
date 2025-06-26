@@ -323,18 +323,16 @@ tbody tr:last-child {
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .panel {
-        padding: 1.5rem; /* Adjusted from 1rem to 1.5rem for better spacing */
+        padding: 1.5rem;
     }
-    /* Removed flex-direction: column for nav ul to keep buttons in a row (if they fit) or wrap symmetrically */
     nav ul {
-        gap: 0.5rem; /* Reduced gap on smaller screens */
+        gap: 0.5rem;
     }
     nav .btn-primary {
-        padding: 0.3rem 0.6rem; /* Even smaller padding on mobile */
-        font-size: 0.75rem; /* Smallest font size for mobile buttons */
-        min-width: 70px; /* Adjusted min width for very small screens */
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        min-width: 70px;
     }
-    /* Original @media rules that are still good */
     .grid-cols-1, .md:grid-cols-2, .lg:grid-cols-3 {
         grid-template-columns: 1fr;
     }
