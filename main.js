@@ -504,14 +504,14 @@ const elementsToTranslate = {
 // For JPY pairs, it's roughly $10 per 100 pips of 0.01 movement for 1 standard lot, so 1 pip movement (0.01) is $10.
 // This simplification is for demonstration; actual pip value depends on cross-currency and account currency.
 const pipValues = {
-    'XAUUSD': 10,    // $10 per 0.01 move for XAUUSD (a typical pip value)
-    'EURUSD': 10,
+    'XAUUSD': 10,    // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10)
+    'EURUSD': 10, // 1 pip = 0.0001, $10 per 0.0001 for 1 standard lot
     'GBPUSD': 10,
     'AUDUSD': 10,
     'NZDUSD': 10,
     'USDCAD': 10,
     'USDCHF': 10,
-    'USDJPY': 10,    // 1 pip is 0.01, value is $10
+    'USDJPY': 10,    // 1 pip is 0.01, value is $10 for 1 standard lot (100,000 units), so multiplier is 100
     'GBPJPY': 10,
     'EURJPY': 10,
     'AUDJPY': 10,
@@ -563,7 +563,7 @@ function setLanguage(lang) {
                 element.textContent = elementsToTranslate[id][lang];
             } else {
                 // Fallback to English if translation for current language is missing
-                element.textContent = elementsToTranslate[id]['en'] || '';
+                element.textContent = elementsToTranslate[id]['en'] || ''; // Fallback for safety
             }
         }
     }
@@ -609,7 +609,7 @@ function calculatePips(pair, entry, exit) {
     if (pair.includes('JPY')) {
         multiplier = 100; // For JPY pairs, 1 pip = 0.01 price movement (e.g., 130.12 to 130.13)
     } else if (pair === 'XAUUSD') {
-        multiplier = 10; // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10)
+        multiplier = 10; // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10). A $1.00 move is 10 pips.
     } else {
         multiplier = 10000; // For most other pairs, 1 pip = 0.0001 price movement (e.g., 1.23450 to 1.23460)
     }
