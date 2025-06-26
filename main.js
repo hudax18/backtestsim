@@ -23,7 +23,7 @@ const importCsvFile = document.getElementById('import-csv-file');
 const importCsvBtn = document.getElementById('import-csv-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 const resetDataBtn = document.getElementById('reset-data-btn');
-const exportPdfBtn = document.getElementById('export-pdf-btn'); // Reference to new PDF export button
+// Removed exportPdfBtn reference
 
 // Navigation elements
 const navDataEntryBtn = document.getElementById('nav-data-entry');
@@ -135,10 +135,7 @@ const elementsToTranslate = {
         'en': 'Reset Data',
         'jp': 'データリセット'
     },
-    'btn-export-pdf': { // New: Export PDF button label
-        'en': 'Export to PDF',
-        'jp': 'PDFにエクスポート'
-    },
+    // Removed btn-export-pdf
     'title-trade-list': {
         'en': 'Trade List',
         'jp': 'トレードリスト'
@@ -478,24 +475,8 @@ const elementsToTranslate = {
     'btn-delete-trade': { // Translate delete button in table specifically
         'en': 'Delete',
         'jp': '削除'
-    },
-    // PDF export specific messages
-    'pdf-export-no-panel': {
-        'en': 'Statistics panel not found for PDF export.',
-        'jp': 'PDFエクスポート用の統計パネルが見つかりません。'
-    },
-    'pdf-export-generating': {
-        'en': 'Generating PDF...',
-        'jp': 'PDFを生成中...'
-    },
-    'pdf-export-success': {
-        'en': 'PDF generated successfully!',
-        'jp': 'PDFが正常に生成されました！'
-    },
-    'pdf-export-failed': {
-        'en': 'Failed to generate PDF. Please try again.',
-        'jp': 'PDFの生成に失敗しました。もう一度お試しください。'
     }
+    // Removed PDF export specific messages
 };
 
 // Pip values per 1 standard lot (100,000 units)
@@ -504,7 +485,7 @@ const elementsToTranslate = {
 // For JPY pairs, it's roughly $10 per 100 pips of 0.01 movement for 1 standard lot, so 1 pip movement (0.01) is $10.
 // This simplification is for demonstration; actual pip value depends on cross-currency and account currency.
 const pipValues = {
-    'XAUUSD': 10,    // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10)
+    'XAUUSD': 10,    // For XAUUSD, 1 pip = 0.10 price movement (e.g., 1900.00 to 1900.10). A $1.00 move is 10 pips.
     'EURUSD': 10, // 1 pip = 0.0001, $10 per 0.0001 for 1 standard lot
     'GBPUSD': 10,
     'AUDUSD': 10,
@@ -875,7 +856,7 @@ function resetAllData() {
 initialCapitalInput.addEventListener('change', calculateAndDisplayStatistics);
 lotSizeInput.addEventListener('change', calculateAndDisplayStatistics);
 resetDataBtn.addEventListener('click', confirmResetData);
-exportPdfBtn.addEventListener('click', exportStatisticsToPdf); // Event listener for PDF export
+// Removed exportPdfBtn.addEventListener('click', exportStatisticsToPdf); as per request
 
 // Function to calculate and display all statistics
 function calculateAndDisplayStatistics() {
@@ -1325,66 +1306,8 @@ exportCsvBtn.addEventListener('click', exportTradesToCSV);
 importCsvBtn.addEventListener('click', () => importCsvFile.click()); // Trigger file input click
 importCsvFile.addEventListener('change', importTradesFromCSV);
 
-// PDF Export Function
-async function exportStatisticsToPdf() {
-    const statisticsPanel = document.getElementById('statistics-panel');
-    if (!statisticsPanel) {
-        showNotification(elementsToTranslate['pdf-export-no-panel'][languageSelect.value], true);
-        return;
-    }
-
-    showNotification(elementsToTranslate['pdf-export-generating'][languageSelect.value]);
-
-    try {
-        // Use html2canvas to render the entire statistics panel as a single image
-        const canvas = await html2canvas(statisticsPanel, {
-            scale: 2, // Increase scale for better resolution in PDF
-            useCORS: true, // Needed if you have images from other domains (e.g., Google Charts eventually)
-            logging: false, // Disable logging for cleaner console
-            allowTaint: true // Allow images from other origins (if any)
-        });
-
-        // Ensure window.jspdf.jsPDF is available
-        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-            console.error("jsPDF library not loaded.");
-            showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value] + " (jsPDF not loaded)", true);
-            return;
-        }
-
-        const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4'); // Initialize jsPDF (portrait, points, A4)
-        const imgData = canvas.toDataURL('image/jpeg', 1.0); // Use JPEG for smaller file size, quality 1.0
-        const imgProps= pdf.getImageProperties(imgData);
-        
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        // Calculate image dimensions to fit PDF page while maintaining aspect ratio
-        const imgAspectRatio = imgProps.width / imgProps.height;
-        const scaledImgWidth = pdfWidth;
-        const scaledImgHeight = pdfWidth / imgAspectRatio;
-
-        let heightLeft = scaledImgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'JPEG', 0, position, scaledImgWidth, scaledImgHeight);
-        heightLeft -= pdfHeight;
-
-        // If content overflows, add new pages
-        while (heightLeft >= 0) {
-            position = heightLeft - scaledImgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, scaledImgWidth, scaledImgHeight);
-            heightLeft -= pdfHeight;
-        }
-
-        pdf.save('trading_statistics.pdf');
-        showNotification(elementsToTranslate['pdf-export-success'][languageSelect.value]);
-
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        showNotification(elementsToTranslate['pdf-export-failed'][languageSelect.value] + " (" + error.message + ")", true);
-    }
-}
+// PDF Export Function has been removed as per request.
+// If you decide to add it back, remember to uncomment the function and its event listener.
 
 
 // Page navigation logic
