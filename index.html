@@ -1,290 +1,348 @@
-<!DOCTYPE html>
-<html lang="en"> <!-- Changed default language to English -->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="app-document-title">Trading Strategy Backtest App</title> <!-- Added ID for document title -->
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Roboto -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Link to custom CSS file -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="p-4 sm:p-6 md:p-8">
-    <div class="container mx-auto space-y-8">
-        <!-- Added id to h1 for language translation -->
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6" id="app-main-title">Trading Strategy Backtest App</h1>
+/* Custom styles for the app */
+body {
+    font-family: 'Roboto', sans-serif; /* Changed font to Roboto */
+    background-color: #f0f4f8; /* Softer light blue-gray background */
+    color: #334155; /* Darker text for readability */
+    line-height: 1.6;
+}
 
-        <!-- Language Selector -->
-        <div class="panel flex justify-end mb-8">
-            <div class="flex items-center space-x-4">
-                <label for="language-select" class="text-gray-700 font-semibold" id="label-language">Language:</label>
-                <select id="language-select" class="input-field max-w-xs">
-                    <option value="en">English</option>
-                    <option value="jp">日本語</option>
-                </select>
-            </div>
-        </div>
+.container {
+    max-width: 1280px; /* Slightly wider container */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1.5rem; /* Consistent padding */
+}
 
-        <!-- Navigation Bar -->
-        <nav class="bg-white p-4 rounded-xl shadow-md mb-8">
-            <ul class="flex justify-center space-x-6">
-                <li><button id="nav-data-entry" class="btn-primary" data-target="page-data-entry">Data Entry</button></li>
-                <li><button id="nav-statistics" class="btn-primary" data-target="page-statistics">Simulation & Statistics</button></li>
-            </ul>
-        </nav>
+h1 {
+    color: #1e293b; /* Darker heading color */
+    font-weight: 700; /* Bold headings */
+    font-size: 2rem; /* Reduced h1 font size */
+    margin-bottom: 1.5rem; /* Adjusted margin */
+}
 
-        <!-- Page Container for Data Entry -->
-        <div id="page-data-entry" class="page-content">
-            <!-- Trade Input Panel -->
-            <div class="panel" id="trade-input-panel">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4" id="title-add-trade">Add New Trade</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label for="trade-pair" class="block text-gray-700 text-sm font-bold mb-2" id="label-pair">Pair</label>
-                        <select id="trade-pair" class="input-field">
-                            <option value="XAUUSD">XAUUSD</option>
-                            <option value="EURUSD">EURUSD</option>
-                            <option value="GBPUSD">GBPUSD</option>
-                            <option value="USDJPY">USDJPY</option>
-                            <option value="USDCAD">USDCAD</option>
-                            <option value="USDCHF">USDCHF</option>
-                            <option value="AUDUSD">AUDUSD</option>
-                            <option value="NZDUSD">NZDUSD</option>
-                            <option value="GBPJPY">GBPJPY</option>
-                            <option value="EURJPY">EURJPY</option>
-                            <option value="AUDJPY">AUDJPY</option>
-                            <option value="CHFJPY">CHFJPY</option>
-                            <option value="CADJPY">CADJPY</option>
-                            <option value="NZDJPY">NZDJPY</option>
-                        </select>
-                    </div>
-                    <!-- START: Fixed Label Association for Action -->
-                    <fieldset>
-                        <legend class="block text-gray-700 text-sm font-bold mb-2" id="label-action">Action</legend>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="trade-action" value="buy" class="form-radio text-blue-600" checked>
-                                <span class="ml-2" id="label-buy">Buy</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="trade-action" value="sell" class="form-radio text-red-600">
-                                <span class="ml-2" id="label-sell">Sell</span>
-                            </label>
-                        </div>
-                    </fieldset>
-                    <!-- END: Fixed Label Association for Action -->
-                    <div>
-                        <label for="trade-open-date" class="block text-gray-700 text-sm font-bold mb-2" id="label-open-date">Open Date</label>
-                        <input type="date" id="trade-open-date" class="input-field">
-                    </div>
-                    <div>
-                        <label for="trade-close-date" class="block text-gray-700 text-sm font-bold mb-2" id="label-close-date">Close Date</label>
-                        <input type="date" id="trade-close-date" class="input-field">
-                    </div>
-                    <div>
-                        <label for="trade-entry" class="block text-gray-700 text-sm font-bold mb-2" id="label-entry-price">Entry Price</label>
-                        <input type="number" id="trade-entry" class="input-field" step="0.00001">
-                    </div>
-                    <div>
-                        <label for="trade-sl" class="block text-gray-700 text-sm font-bold mb-2" id="label-sl-price">SL Price</label>
-                        <input type="number" id="trade-sl" class="input-field" step="0.00001">
-                    </div>
-                    <div>
-                        <label for="trade-tp" class="block text-gray-700 text-sm font-bold mb-2" id="label-tp-price">TP Price</label>
-                        <input type="number" id="trade-tp" class="input-field" step="0.00001">
-                    </div>
-                    <!-- START: Fixed Label Association for Outcome -->
-                    <fieldset>
-                        <legend class="block text-gray-700 text-sm font-bold mb-2" id="label-outcome">Outcome</legend>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="trade-outcome" value="TP" class="form-radio text-green-600" checked>
-                                <span class="ml-2" id="outcome-tp-label">TP</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="trade-outcome" value="SL" class="form-radio text-red-600">
-                                <span class="ml-2" id="outcome-sl-label">SL</span>
-                            </label>
-                        </div>
-                    </fieldset>
-                    <!-- END: Fixed Label Association for Outcome -->
-                </div>
-                <button id="add-trade-btn" class="btn-primary w-full md:w-auto">Add Trade</button>
+h2 {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1.75rem; /* Reduced h2 font size */
+    margin-bottom: 1.25rem; /* Adjusted margin */
+}
 
-                <!-- Import/Export & Reset Buttons (for Data Entry) -->
-                <div class="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-end">
-                    <input type="file" id="import-csv-file" accept=".csv" class="hidden">
-                    <button id="import-csv-btn" class="btn-primary">Import from CSV</button>
-                    <button id="export-csv-btn" class="btn-primary">Export to CSV</button>
-                    <button id="reset-data-btn" class="btn-danger">Reset Data</button>
-                </div>
-            </div>
+h3 {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1.4rem; /* Reduced h3 font size */
+    margin-top: 1.5rem; /* Adjusted margin */
+    margin-bottom: 1rem;
+}
 
-            <!-- Trade Table Panel -->
-            <div class="panel" id="trade-list-panel">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4" id="title-trade-list">Trade List</h2>
-                <div class="overflow-x-auto">
-                    <table id="trade-table" class="min-w-full">
-                        <thead>
-                            <tr>
-                                <th id="th-pair">Pair</th>
-                                <th id="th-action">Action</th>
-                                <th id="th-open-date">Open Date</th>
-                                <th id="th-close-date">Close Date</th>
-                                <th id="th-entry-price">Entry</th>
-                                <th id="th-sl-price">SL</th>
-                                <th id="th-tp-price">TP</th>
-                                <th id="th-pips">Pips</th>
-                                <th id="th-outcome">Outcome</th>
-                                <th id="th-holding-period">Holding Period (days)</th>
-                                <th id="th-actions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="trade-table-body">
-                            <!-- Trade rows will be inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <!-- Page Container for Simulation and Statistics -->
-        <div id="page-statistics" class="page-content hidden">
-            <!-- Simulation and Statistics Panel -->
-            <div class="panel" id="statistics-panel">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4" id="title-simulation-stats">Simulation & Statistics</h2>
+.panel {
+    background-color: #ffffff;
+    border-radius: 1rem; /* More rounded corners */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Softer, larger shadow */
+    padding: 2rem; /* Increased padding */
+    margin-bottom: 2rem; /* Consistent spacing between panels */
+    border: 1px solid #e2e8f0; /* Subtle border */
+}
 
-                <!-- Simulation Inputs -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label for="initial-capital" class="block text-gray-700 text-sm font-bold mb-2" id="label-initial-capital">Initial Capital ($)</label>
-                        <input type="number" id="initial-capital" class="input-field" value="1000" step="100">
-                    </div>
-                    <div>
-                        <label for="lot-size" class="block text-gray-700 text-sm font-bold mb-2" id="label-lot-size">Lot Size (standard lot)</label>
-                        <input type="number" id="lot-size" class="input-field" value="0.01" step="0.01">
-                    </div>
-                </div>
+/* Navigation Bar Styling */
+nav {
+    background-color: #ffffff;
+    padding: 0.5rem 1rem; /* Further reduced padding for smaller nav bar */
+    border-radius: 0.75rem; /* Slightly less rounded */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Softer shadow */
+}
 
-                <!-- Equity Growth Chart -->
-                <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-4" id="title-equity-growth-chart">Equity Growth Chart</h3>
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
-                    <canvas id="equity-chart" class="w-full h-64 md:h-80"></canvas>
-                </div>
+nav ul {
+    display: flex;
+    justify-content: center; /* Ensures symmetry for horizontal and wrapped items */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 1rem; /* Use gap for consistent spacing between buttons */
+    flex-wrap: wrap; /* Allow buttons to wrap to next line if needed on small screens */
+}
 
-                <!-- Key Statistics -->
-                <h3 class="text-xl font-semibold text-gray-800 mb-4" id="title-key-stats">Key Statistics</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-blue-800 font-medium" id="stat-win-rate-label">Win Rate:</p>
-                        <p class="text-2xl font-bold text-blue-900" id="stat-win-rate">0.00%</p>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-green-800 font-medium" id="stat-total-profit-pips-label">Total Profit (Pips):</p>
-                        <p class="text-2xl font-bold text-green-900" id="stat-total-profit-pips">0.00</p>
-                    </div>
-                    <div class="bg-red-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-red-800 font-medium" id="stat-total-loss-pips-label">Total Loss (Pips):</p>
-                        <p class="text-2xl font-bold text-red-900" id="stat-total-loss-pips">0.00</p>
-                    </div>
-                    <div class="bg-yellow-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-yellow-800 font-medium" id="stat-total-profit-nominal-label">Total Profit (Nominal):</p>
-                        <p class="text-2xl font-bold text-yellow-900" id="stat-total-profit-nominal">$0.00</p>
-                    </div>
-                    <div class="bg-purple-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-purple-800 font-medium" id="stat-total-loss-nominal-label">Total Loss (Nominal):</p>
-                        <p class="text-2xl font-bold text-purple-900" id="stat-total-loss-nominal">$0.00</p>
-                    </div>
-                    <div class="bg-indigo-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-indigo-800 font-medium" id="stat-capital-growth-percent-label">Capital Growth (%):</p>
-                        <p class="text-2xl font-bold text-indigo-900" id="stat-capital-growth-percent">0.00%</p>
-                    </div>
-                    <div class="bg-pink-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-pink-800 font-medium" id="stat-probability-label">Probability (%):</p>
-                        <p class="text-2xl font-bold text-pink-900" id="stat-probability">0.00%</p>
-                    </div>
-                    <div class="bg-teal-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-teal-800 font-medium" id="stat-avg-profit-pips-label">Average Profit (Pips):</p>
-                        <p class="text-2xl font-bold text-teal-900" id="stat-avg-profit-pips">0.00</p>
-                    </div>
-                    <div class="bg-orange-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-orange-800 font-medium" id="stat-avg-loss-pips-label">Average Loss (Pips):</p>
-                        <p class="text-2xl font-bold text-orange-900" id="stat-avg-loss-pips">0.00</p>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-gray-800 font-medium" id="stat-avg-rr-label">Average Risk/Reward:</p>
-                        <p class="text-2xl font-bold text-gray-900" id="stat-avg-rr">0.00</p>
-                    </div>
-                    <div class="bg-blue-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-blue-800 font-medium" id="stat-max-drawdown-label">Max Drawdown (%):</p>
-                        <p class="text-2xl font-bold text-blue-900" id="stat-max-drawdown">0.00%</p>
-                    </div>
-                    <div class="bg-red-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-red-800 font-medium" id="stat-max-consecutive-loss-label">Max Consecutive Loss:</p>
-                        <p class="text-2xl font-bold text-red-900" id="stat-max-consecutive-loss">0</p>
-                    </div>
-                    <div class="bg-green-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-green-800 font-medium" id="stat-max-consecutive-profit-label">Max Consecutive Profit:</p>
-                        <p class="text-2xl font-bold text-green-900" id="stat-max-consecutive-profit">0</p>
-                    </div>
-                    <div class="bg-orange-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-orange-800 font-medium" id="stat-max-loss-pips-label">Max Loss (Pips):</p>
-                        <p class="text-2xl font-bold text-orange-900" id="stat-max-loss-pips">0.00</p>
-                    </div>
-                    <div class="bg-lime-100 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-lime-800 font-medium" id="stat-max-tp-pips-label">Max TP (Pips):</p>
-                        <p class="text-2xl font-bold text-lime-900" id="stat-max-tp-pips">0.00</p>
-                    </div>
-                    <div class="bg-cyan-50 p-4 rounded-lg flex flex-col justify-between">
-                        <p class="text-sm text-cyan-800 font-medium" id="stat-avg-holding-period-label">Avg. Holding Period (days):</p>
-                        <p class="text-2xl font-bold text-cyan-900" id="stat-avg-holding-period">0.00</p>
-                    </div>
-                </div>
+nav li {
+    margin: 0; /* Remove individual margins as gap handles it */
+    text-align: center; /* Ensures content within li is centered */
+}
 
-                <!-- Pips Per Month/Year Table -->
-                <h3 class="text-xl font-semibold text-gray-800 mb-4" id="title-pips-summary">Pips Summary</h3>
-                <div class="overflow-x-auto mb-6">
-                    <table id="pips-summary-table" class="min-w-full">
-                        <thead>
-                            <tr>
-                                <th id="th-year">Year</th>
-                                <th id="th-jan">Jan</th>
-                                <th id="th-feb">Feb</th>
-                                <th id="th-mar">Mar</th>
-                                <th id="th-apr">Apr</th>
-                                <th id="th-may">May</th>
-                                <th id="th-jun">Jun</th>
-                                <th id="th-jul">Jul</th>
-                                <th id="th-aug">Aug</th>
-                                <th id="th-sep">Sep</th>
-                                <th id="th-oct">Oct</th>
-                                <th id="th-nov">Nov</th>
-                                <th id="th-dec">Dec</th>
-                                <th id="th-total-year">Total Year</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pips-summary-table-body">
-                            <!-- Monthly pips data will be inserted here -->
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="13" class="text-right" id="th-total-overall">Total Overall Pips:</th>
-                                <th id="total-overall-pips">0.00</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
+/* Updated primary button for navigation consistency */
+nav .btn-primary {
+    background-color: #294066; /* Darker Blue-Grey (Cool, Dark) */
+    color: white;
+    padding: 0.4rem 0.8rem; /* Slightly more reduced padding */
+    border-radius: 0.4rem;
+    font-weight: 500; /* Slightly lighter font weight for minimal look */
+    transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Smaller shadow */
+    font-size: 0.8rem; /* Further reduced font size for buttons */
+    white-space: nowrap; /* Keep text on single line */
+    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+    min-width: 80px; /* Minimum width to prevent tiny buttons */
+}
 
-        <!-- Notification Box -->
-        <div id="notification-box" class="notification-box"></div>
+nav .btn-primary:hover {
+    background-color: #3b5073; /* Slightly lighter on hover */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Slightly more prominent shadow on hover */
+    transform: translateY(-1px);
+}
 
-    </div>
+/* Active navigation button */
+nav .btn-primary.active-nav {
+    background-color: #0c203b; /* Even darker, almost black-blue (Cool, Dark) */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15); /* Inset shadow for active */
+    transform: translateY(0); /* No lift for active state */
+}
 
-    <!-- Link to main JavaScript file -->
-    <script src="main.js"></script>
-</body>
-</html>
+
+.input-field {
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+    width: 100%;
+    background-color: #f8fafc;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #5d81b3; /* Medium Blue-Grey (Cool) for focus border */
+    box-shadow: 0 0 0 3px rgba(93, 129, 179, 0.2);
+}
+
+/* Radio button custom styling */
+.form-radio {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    border: 2px solid #94a3b8; /* Darker gray border for radios */
+    background-color: #f8fafc;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.form-radio:checked {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.form-radio.text-blue-600:checked {
+    background-color: #3b82f6; /* Blue for Buy */
+}
+
+.form-radio.text-red-600:checked {
+    background-color: #ef4444; /* Red for Sell/SL (warm accent) */
+}
+
+.form-radio.text-green-600:checked {
+    background-color: #22c55e; /* Green for TP (cool accent) */
+}
+
+/* Inner dot for radio buttons */
+.form-radio:checked::before {
+    content: '';
+    display: block;
+    width: 0.625rem;
+    height: 0.625rem;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.btn-primary {
+    background-color: #294066; /* Match nav primary */
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: #3b5073; /* Match nav primary hover */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger {
+    background-color: #ef4444;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+th:first-child {
+    border-top-left-radius: 0.75rem;
+}
+th:last-child {
+    border-top-right-radius: 0.75rem;
+}
+
+tbody tr {
+    background-color: #ffffff;
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+tbody tr:hover {
+    background-color: #f8fafc;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+tbody tr:first-child {
+    border-top-left-radius: 0;
+}
+tbody tr:last-child {
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+}
+
+
+/* Specific styling for stats boxes */
+.bg-blue-50 { background-color: #eff6ff; } /* Lightest blue */
+.text-blue-800 { color: #1e40af; }
+.text-blue-900 { color: #1e3a8a; }
+
+.bg-green-50 { background-color: #f0fdf4; } /* Lightest green */
+.text-green-800 { color: #166534; }
+.text-green-900 { color: #14532d; }
+
+.bg-red-50 { background-color: #fef2f2; } /* Lightest red */
+.text-red-800 { color: #991b1b; }
+.text-red-900 { color: #7f1d1d; }
+
+.bg-yellow-50 { background-color: #fffbeb; } /* Lightest yellow */
+.text-yellow-800 { color: #92400e; }
+.text-yellow-900 { color: #78350f; }
+
+.bg-purple-50 { background-color: #f5f3ff; } /* Lightest purple */
+.text-purple-800 { color: #5b21b6; }
+.text-purple-900 { color: #4c1d95; }
+
+.bg-indigo-50 { background-color: #eef2ff; } /* Lightest indigo */
+.text-indigo-800 { color: #4338ca; }
+.text-indigo-900 { color: #3730a3; }
+
+.bg-pink-50 { background-color: #fdf2f8; } /* Lightest pink */
+.text-pink-800 { color: #9d174d; }
+.text-pink-900 { color: #831843; }
+
+.bg-teal-50 { background-color: #f0fdfa; } /* Lightest teal */
+.text-teal-800 { color: #0f766e; }
+.text-teal-900 { color: #115e59; }
+
+.bg-orange-50 { background-color: #fff7ed; } /* Lightest orange */
+.text-orange-800 { color: #9a3412; }
+.text-orange-900 { color: #7c2d12; }
+
+.bg-lime-100 { background-color: #f7fee7; } /* Light lime */
+.text-lime-800 { color: #4d7c0f; }
+.text-lime-900 { color: #3f6212; }
+
+.bg-cyan-50 { background-color: #ecfeff; } /* Lightest cyan */
+.text-cyan-800 { color: #0e7490; }
+.text-cyan-900 { color: #164e63; }
+
+.bg-gray-100 { background-color: #f3f4f6; } /* Light gray */
+
+
+.notification-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #22c55e; /* Green */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 0.75rem; /* Rounded corners */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 1000;
+    display: none; /* Hidden by default */
+    font-weight: 500;
+    transition: opacity 0.3s ease-in-out;
+}
+.notification-box.error {
+    background-color: #ef4444; /* Red */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .panel {
+        padding: 1.5rem; /* Adjusted from 1rem to 1.5rem for better spacing */
+    }
+    /* Removed flex-direction: column for nav ul to keep buttons in a row (if they fit) or wrap symmetrically */
+    nav ul {
+        gap: 0.5rem; /* Reduced gap on smaller screens */
+    }
+    nav .btn-primary {
+        padding: 0.3rem 0.6rem; /* Even smaller padding on mobile */
+        font-size: 0.75rem; /* Smallest font size for mobile buttons */
+        min-width: 70px; /* Adjusted min width for very small screens */
+    }
+    /* Original @media rules that are still good */
+    .grid-cols-1, .md:grid-cols-2, .lg:grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    .sm\:flex-row {
+        flex-direction: column;
+    }
+    .sm\:space-x-4 {
+        space-x: 0;
+        gap: 1rem;
+    }
+}
