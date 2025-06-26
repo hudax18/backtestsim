@@ -51,16 +51,23 @@ nav {
     padding: 0.5rem 1rem; /* Further reduced padding for smaller nav bar */
     border-radius: 0.75rem; /* Slightly less rounded */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Softer shadow */
+    display: flex; /* Make nav a flex container */
+    align-items: center; /* Vertically align items in nav */
+    justify-content: center; /* Horizontally center content within nav */
+    z-index: 10; /* Ensure nav is on top of potential overlapping elements */
+    position: relative; /* Establish a stacking context for z-index */
 }
 
 nav ul {
     display: flex;
-    justify-content: center; /* Ensures symmetry for horizontal and wrapped items */
+    /* Removed justify-content: center here as parent nav is centering */
     list-style: none;
     padding: 0;
     margin: 0;
     gap: 1rem; /* Use gap for consistent spacing between buttons */
     flex-wrap: wrap; /* Allow buttons to wrap to next line if needed on small screens */
+    flex-grow: 1; /* Allow ul to grow to fill space in nav */
+    justify-content: center; /* Ensure contents of ul are centered (important for wrapped items) */
 }
 
 nav li {
@@ -82,7 +89,11 @@ nav .btn-primary {
     font-size: 0.8rem; /* Further reduced font size for buttons */
     white-space: nowrap; /* Keep text on single line */
     flex-shrink: 0; /* Prevent buttons from shrinking too much */
-    min-width: 80px; /* Minimum width to prevent tiny buttons */
+    min-width: 90px; /* Slightly increased min-width for better appearance */
+    height: 35px; /* Fixed height for consistency */
+    display: flex; /* Make button content a flexbox */
+    align-items: center; /* Vertically center button text */
+    justify-content: center; /* Horizontally center button text */
 }
 
 nav .btn-primary:hover {
@@ -326,13 +337,18 @@ tbody tr:last-child {
         padding: 1.5rem;
     }
     nav ul {
-        gap: 0.5rem;
+        /* On small screens, keep buttons in a row if space allows, otherwise wrap symmetrically */
+        /* Removed flex-direction: column for nav ul to maintain horizontal flow if possible */
+        gap: 0.5rem; /* Reduced gap on smaller screens */
     }
     nav .btn-primary {
         padding: 0.3rem 0.6rem;
         font-size: 0.75rem;
         min-width: 70px;
+        /* Ensure buttons adapt width within flex-wrap */
+        flex-basis: auto; /* Allow content to dictate basis, or set a percentage like 48% for two columns if desired */
     }
+    /* Original @media rules that are still good */
     .grid-cols-1, .md:grid-cols-2, .lg:grid-cols-3 {
         grid-template-columns: 1fr;
     }
