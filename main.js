@@ -586,7 +586,7 @@ function calculatePips(pair, entry, exit) {
     if (pair.includes('JPY')) {
         multiplier = 100; // For JPY pairs (e.g., 130.123 -> 130.12)
     } else if (pair === 'XAUUSD') {
-        multiplier = 100; // For XAUUSD, 0.01 move is often considered 1 pip.
+        multiplier = 10; // For XAUUSD, 0.1 move is often considered 1 pip.
     }
     return parseFloat(((exit - entry) * multiplier).toFixed(2));
 }
