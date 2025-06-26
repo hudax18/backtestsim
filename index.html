@@ -10,9 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Link to custom CSS file -->
     <link rel="stylesheet" href="style.css">
-    <!-- jsPDF and html2canvas for PDF export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Removed jsPDF and html2canvas CDN links -->
 </head>
 <body class="p-4 sm:p-6 md:p-8">
     <div class="container mx-auto space-y-8">
@@ -114,7 +112,7 @@
                 <button id="add-trade-btn" class="btn-primary w-full md:w-auto">Add Trade</button>
 
                 <!-- Import/Export & Reset Buttons (for Data Entry) -->
-                <div class="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-end"> <!-- Added justify-end for alignment -->
+                <div class="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-end">
                     <input type="file" id="import-csv-file" accept=".csv" class="hidden">
                     <button id="import-csv-btn" class="btn-primary">Import from CSV</button>
                     <button id="export-csv-btn" class="btn-primary">Export to CSV</button>
@@ -276,10 +274,7 @@
                         </tfoot>
                     </table>
                 </div>
-                <!-- Export PDF Button (for Statistics) -->
-                <div class="mt-6 flex justify-end">
-                    <button id="export-pdf-btn" class="btn-primary">Export to PDF</button>
-                </div>
+                <!-- Removed Export PDF Button -->
             </div>
         </div>
 
